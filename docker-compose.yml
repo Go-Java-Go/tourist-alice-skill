@@ -1,0 +1,22 @@
+version: '3.3'
+services:
+  telegram-bot:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    restart: always
+    container_name: tourist-skill-sub
+    environment:
+      - LOG_LEVEL=debug
+      - DB_HOST=mongodb://mongo:27017/
+      - LOG_FMT=json
+
+  mongo:
+    image: mongo
+    restart: always
+    environment:
+      - MONGO_INITDB_DATABASE=tourist
+
+networks:
+  subs:
+    name: skill

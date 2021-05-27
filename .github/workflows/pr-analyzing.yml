@@ -1,23 +1,27 @@
-name: Analyze pr
+name: Util pr
 
 on:
   pull_request:
-    types: [opened, reopened]
+    types: [ opened, reopened ]
 
 jobs:
   assign-to-project:
     name: Assign PullRequest to Project
     runs-on: ubuntu-latest
     steps:
+      - uses: tkt-actions/add-issue-links@v1.4.0
+        with:
+          repo-token: '${{ secrets.GITHUB_TOKEN }}'
+          branch-prefix: '/'
+          link-style: comment
+
       - name: Assign PullRequest to Project
         uses: technote-space/create-project-card-action@v1
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
           PROJECT: Tourist-feature-tracker
           COLUMN: In progress
-  assign-pr-author-as-assignee:
-    runs-on: ubuntu-latest
-    steps:
+          CHECK_ORG_PROJECT: true
       - name: Assign Author as Assignee
         uses: itsOliverBott/assign-pr-author-as-assignee@latest
         with:

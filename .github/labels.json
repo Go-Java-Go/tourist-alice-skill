@@ -1,0 +1,61 @@
+{
+  "labels": {
+    "fix": {
+      "name": "type:fix",
+      "colour": "d73a4a",
+      "description": "Fixes bugs"
+    },
+    "feature": {
+      "name": "type:features",
+      "colour": "0075ca",
+      "description": "New features"
+    },
+    "config": {
+      "name": "type:config",
+      "colour": "bc6bc0",
+      "description": "Add configs"
+    },
+    "documentation": {
+      "name": "type:documentation",
+      "colour": "f50057",
+      "description": "Add documentation"
+    },
+    "tests": {
+      "name": "type:tests",
+      "colour": "4db6ac",
+      "description": "Add test"
+    }
+  },
+  "pr": {
+    "fix": {
+      "requires" : 1,
+      "conditions" : [
+        {
+          "type" : "branchMatches",
+          "pattern" : "^fix"
+        },
+        {
+          "type" : "branchMatches",
+          "pattern" : "^bugfix"
+        },
+        {
+          "type": "titleMatches",
+          "pattern": "^[BF]"
+        }
+      ]
+    },
+    "feature": {
+      "requires" : 1,
+      "conditions" : [
+        {
+          "type" : "branchMatches",
+          "pattern" : "^feature"
+        },
+        {
+          "type": "titleMatches",
+          "pattern": "^[NF]"
+        }
+      ]
+    }
+  }
+}

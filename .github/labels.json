@@ -1,0 +1,46 @@
+{
+  "labels": {
+    "fix": {
+      "name": "type:fix",
+      "colour": "",
+      "description": "Fixes bugs"
+    },
+    "feature": {
+      "name": "type:features",
+      "colour": "",
+      "description": "New features"
+    }
+  },
+  "pr": {
+    "fix": {
+      "requires" : 1,
+      "conditions" : [
+        {
+          "type" : "branchMatches",
+          "pattern" : "^fix"
+        },
+        {
+          "type" : "branchMatches",
+          "pattern" : "^bugfix"
+        },
+        {
+          "type": "titleMatches",
+          "pattern": "^[BF]"
+        }
+      ]
+    },
+    "feature": {
+      "requires" : 1,
+      "conditions" : [
+        {
+          "type" : "branchMatches",
+          "pattern" : "^feature"
+        },
+        {
+          "type": "titleMatches",
+          "pattern": "^[NF]"
+        }
+      ]
+    }
+  }
+}

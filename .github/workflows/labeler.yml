@@ -1,13 +1,27 @@
-name: Verify type labels"
+name: Labeler
 
 on:
   pull_request:
-    types: [opened, labeled, unlabeled, synchronize]
+    types: [ opened, reopened, edited, labeled, unlabeled, synchronize ]
+  push:
+    paths:
+      - .github/labels.json
 
 jobs:
-  triage:
+  labeler:
     runs-on: ubuntu-18.04
     steps:
-      - uses: zwaldowski/match-label-action@v2
+      - uses: actions/checkout@v2
+      - uses: tkt-actions/add-issue-links@v1.4.0
+        with:
+          repo-token: '${{ secrets.GITHUB_TOKEN }}'
+          branch-prefix: '/'
+          resolve: true
+      - name: Add lables
+        uses: IvanFon/super-labeler-action@v1
+        with:
+          github-token: '${{ secrets.GITHUB_TOKEN }}'
+      - name: Check lables
+        uses: zwaldowski/match-label-action@v2
         with:
           allowed: 'type:fix, type:features, type:documentation, type:tests, type:config'

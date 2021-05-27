@@ -1,0 +1,36 @@
+name-template: 'v$RESOLVED_VERSION'
+tag-template: 'v$RESOLVED_VERSION'
+categories:
+  - title: '🚀 New Features'
+    labels:
+      - 'type:features'
+  # в эту категорию собираем все PR с меткой type:features
+
+  - title: '🐞 Bugs Fixes'
+    labels:
+      - 'type:fix'
+
+  - title: '📚 Documentation'
+    labels:
+      - 'type:documentation'
+
+  - title: '🛠 Configuration'
+    labels:
+      - 'type:config'
+
+change-template: '- $TITLE @$AUTHOR (#$NUMBER)'
+template: |
+  ## Changes
+  $CHANGES
+
+version-resolver:
+  major:
+    labels:
+      - 'release:major'
+  minor:
+    labels:
+      - 'release:minor'
+  patch:
+    labels:
+      - 'release:patch'
+  default: patch

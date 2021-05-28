@@ -24,44 +24,62 @@
       "name": "type:tests",
       "colour": "4db6ac",
       "description": "Add test"
+    },
+    "wip": {
+      "name" : "wip",
+      "colour" : "ff0000",
+      "description" : "Work in progress"
     }
   },
   "pr": {
     "fix": {
-      "requires" : 1,
-      "conditions" : [
+      "requires": 1,
+      "conditions": [
         {
-          "type" : "branchMatches",
-          "pattern" : "^fix"
+          "type": "branchMatches",
+          "pattern": "^fix*"
         },
         {
-          "type" : "branchMatches",
-          "pattern" : "^bugfix"
-        },
-        {
-          "type": "titleMatches",
-          "pattern": "^[BF]"
+          "type": "branchMatches",
+          "pattern": "^bugfix*"
         },
         {
           "type": "titleMatches",
-          "pattern": "^Fix"
+          "pattern": "^[BF]*"
+        },
+        {
+          "type": "titleMatches",
+          "pattern": "^Fix*"
         }
       ]
     },
     "feature": {
+      "requires": 1,
+      "conditions": [
+        {
+          "type": "branchMatches",
+          "pattern": "^feature*"
+        },
+        {
+          "type": "titleMatches",
+          "pattern": "^[NF]*"
+        },
+        {
+          "type": "titleMatches",
+          "pattern": "^Feature*"
+        }
+      ]
+    },
+    "wip": {
       "requires" : 1,
-      "conditions" : [
+      "conditions": [
         {
-          "type" : "branchMatches",
-          "pattern" : "^feature"
+          "type": "titleMatches",
+          "pattern": "^WIP*"
         },
         {
           "type": "titleMatches",
-          "pattern": "^[NF]"
-        },
-        {
-          "type": "titleMatches",
-          "pattern": "^Feature"
+          "pattern": "^[WIP]*"
         }
       ]
     }

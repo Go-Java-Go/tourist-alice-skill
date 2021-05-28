@@ -1,22 +1,15 @@
-name: Labeler
+name: Pr checker
 
 on:
   pull_request:
     types: [ opened, reopened, edited, labeled, unlabeled, synchronize ]
-  push:
-    paths:
-      - .github/labels.json
 
 jobs:
   labeler:
+    name: Work with lables
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
-      - uses: tkt-actions/add-issue-links@v1.4.0
-        with:
-          repo-token: '${{ secrets.GITHUB_TOKEN }}'
-          branch-prefix: '/'
-          resolve: true
       - name: Add lables
         uses: IvanFon/super-labeler-action@v1
         with:
@@ -25,3 +18,22 @@ jobs:
         uses: zwaldowski/match-label-action@v2
         with:
           allowed: 'type:fix, type:features, type:documentation, type:tests, type:config'
+  pr-analyze:
+    name: Analyze pr
+    runs-on: ubuntu-latest
+    steps:
+      - uses: tkt-actions/add-issue-links@v1.4.0
+        with:
+          repo-token: '${{ secrets.GITHUB_TOKEN }}'
+          branch-prefix: '/'
+      - name: Assign PullRequest to Project
+        uses: technote-space/create-project-card-action@v1
+        with:
+          GITHUB_TOKEN: ${{ secrets.ACCESS_TOKEN }}
+          PROJECT: Tourist-feature-tracker
+          COLUMN: In progress
+          CHECK_ORG_PROJECT: true
+      - name: Assign Author as Assignee
+        uses: toshimaru/auto-author-assign@v1.3.4
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}

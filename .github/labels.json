@@ -41,6 +41,10 @@
         {
           "type": "titleMatches",
           "pattern": "^[BF]"
+        },
+        {
+          "type": "titleMatches",
+          "pattern": "^Fix"
         }
       ]
     },
@@ -54,6 +58,10 @@
         {
           "type": "titleMatches",
           "pattern": "^[NF]"
+        },
+        {
+          "type": "titleMatches",
+          "pattern": "^Feature"
         }
       ]
     }

@@ -4,9 +4,20 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      publish-image:
+        description: Publish docker image
+        required: false
+        default: "true"
+      deploy:
+        description: Deploy to server
+        required: false
+        default: "true"
 
 jobs:
   docker:
+    if: ${{github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.publish-image == 'true') }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -43,3 +54,43 @@ jobs:
           push: true
           labels: docker.pkg.github.com/${{ github.repository }}/skill
           tags: ${{ steps.meta.outputs.labels }}
+  deploy:
+    name: Deploy my app
+    if: ${{github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && github.event.inputs.deploy == 'true') }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+
+      - uses: chrnorm/deployment-action@releases/v1
+        name: Create GitHub deployment
+        id: deployment
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          target_url: ${{ secrets.APP_URL }}
+          environment: production
+
+      - name: Execute SSH commmands on remote server
+        uses: JimCronqvist/action-ssh@master
+        with:
+          hosts: ${{secrets.USER }}:${{ secrets.HOST }}
+          privateKey: ${{ secrets.PRIVATE_KEY }}
+          command: |
+            echo "Starting docker"
+
+      - name: Update deployment status (success)
+        if: success()
+        uses: chrnorm/deployment-status@releases/v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          target_url: ${{ secrets.APP_URL }}
+          state: "success"
+          deployment_id: ${{ steps.deployment.outputs.deployment_id }}
+
+      - name: Update deployment status (failure)
+        if: failure()
+        uses: chrnorm/deployment-status@releases/v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          target_url: ${{ secrets.APP_URL }}
+          state: "failure"
+          deployment_id: ${{ steps.deployment.outputs.deployment_id }}

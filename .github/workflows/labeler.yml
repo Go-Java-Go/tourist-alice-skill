@@ -1,13 +1,20 @@
-name: Verify type labels"
+name: Pr checker
 
 on:
   pull_request:
-    types: [opened, labeled, unlabeled, synchronize]
+    types: [ opened, reopened, edited, synchronize, ready_for_review ]
 
 jobs:
-  triage:
+  add-labels:
+    name: Add lables
     runs-on: ubuntu-18.04
     steps:
-      - uses: zwaldowski/match-label-action@v2
+      - uses: actions/checkout@v2
+      - uses: wip/action@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Add lables
+        uses: IvanFon/super-labeler-action@v1
         with:
-          allowed: 'type:fix, type:features, type:documentation, type:tests, type:config'
+          github-token: '${{ secrets.GITHUB_TOKEN }}'
+

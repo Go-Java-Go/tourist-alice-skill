@@ -24,19 +24,24 @@
       "name": "type:tests",
       "colour": "4db6ac",
       "description": "Add test"
+    },
+    "wip": {
+      "name" : "wip",
+      "colour" : "ff0000",
+      "description" : "Work in progress"
     }
   },
   "pr": {
     "fix": {
-      "requires" : 1,
-      "conditions" : [
+      "requires": 1,
+      "conditions": [
         {
-          "type" : "branchMatches",
-          "pattern" : "^fix"
+          "type": "branchMatches",
+          "pattern": "^fix"
         },
         {
-          "type" : "branchMatches",
-          "pattern" : "^bugfix"
+          "type": "branchMatches",
+          "pattern": "^bugfix"
         },
         {
           "type": "titleMatches",
@@ -49,11 +54,11 @@
       ]
     },
     "feature": {
-      "requires" : 1,
-      "conditions" : [
+      "requires": 1,
+      "conditions": [
         {
-          "type" : "branchMatches",
-          "pattern" : "^feature"
+          "type": "branchMatches",
+          "pattern": "^feature"
         },
         {
           "type": "titleMatches",
@@ -62,6 +67,19 @@
         {
           "type": "titleMatches",
           "pattern": "^Feature"
+        }
+      ]
+    },
+    "wip": {
+      "requires" : 1,
+      "conditions": [
+        {
+          "type": "titleMatches",
+          "pattern": "^WIP"
+        },
+        {
+          "type": "titleMatches",
+          "pattern": "^[WIP]"
         }
       ]
     }

@@ -3,9 +3,6 @@ name: Pr checker
 on:
   pull_request:
     types: [ opened, reopened, edited, labeled, unlabeled, synchronize ]
-  push:
-    paths:
-      - .github/labels.json
 
 jobs:
   labeler:
@@ -37,6 +34,6 @@ jobs:
           COLUMN: In progress
           CHECK_ORG_PROJECT: true
       - name: Assign Author as Assignee
-        uses: toshimaru/auto-author-assign
+        uses: toshimaru/auto-author-assign@v1.3.4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          repo-token: ${{ secrets.GITHUB_TOKEN }}

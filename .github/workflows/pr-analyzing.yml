@@ -14,7 +14,6 @@ jobs:
           repo-token: '${{ secrets.GITHUB_TOKEN }}'
           branch-prefix: '/'
           link-style: comment
-
       - name: Assign PullRequest to Project
         uses: technote-space/create-project-card-action@v1
         with:

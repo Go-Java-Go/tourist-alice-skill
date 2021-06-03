@@ -5,7 +5,6 @@ import (
 	travel_client "github.com/Go-Java-Go/izi-travel-client"
 	"github.com/azzzak/alice"
 	"github.com/rs/zerolog/log"
-	"go.mongodb.org/mongo-driver/bson/primitive"
 	"tourist-alice-skill/internal/api"
 )
 
@@ -27,12 +26,12 @@ func (s OperationScreen) HasReact(u api.Update) bool {
 }
 
 func (s *OperationScreen) OnMessage(ctx context.Context, u api.Update) (d *alice.Response, err error) {
-	defer func(css ChatStateService, ctx context.Context, id primitive.ObjectID) {
-		err := css.DeleteById(ctx, id)
+	defer func() {
+		err := s.css.DeleteById(ctx, u.ChatState.ID)
 		if err != nil {
 			log.Error().Err(err).Msg("")
 		}
-	}(s.css, ctx, u.ChatState.ID)
+	}()
 
 	cs := &api.ChatState{UserId: u.User.ID, Action: selectedCity, CallbackData: &api.CallbackData{SelectedCity: u.Request.Command()}}
 	err = s.css.Save(ctx, cs)

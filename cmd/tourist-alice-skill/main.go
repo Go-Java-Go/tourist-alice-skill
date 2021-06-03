@@ -84,7 +84,13 @@ func initLogger(c *config) error {
 }
 
 func initMongoConnection(ctx context.Context, cfg *config) (*mongo.Database, func(), error) {
-	client, err := mongo.NewClient(options.Client().ApplyURI(cfg.DbAddr))
+	client, err := mongo.NewClient(
+		options.Client().
+			ApplyURI(cfg.DbAddr).
+			SetAuth(options.Credential{
+				Username: cfg.DbUser,
+				Password: cfg.DbPassword,
+			}))
 	if err != nil {
 		return nil, nil, err
 	}

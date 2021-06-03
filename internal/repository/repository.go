@@ -2,7 +2,6 @@ package repository
 
 import (
 	"context"
-	"errors"
 	"github.com/rs/zerolog/log"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -73,13 +72,12 @@ func (r MongoUserRepository) UpsertLangUser(ctx context.Context, userId string, 
 }
 
 func (csr MongoChatStateRepository) Save(ctx context.Context, cs *api.ChatState) error {
-	res, err := csr.col.InsertOne(ctx, cs)
-	if err != nil {
-		log.Error().Err(err).Msg("insert failed")
-	}
-	if res != nil && res.InsertedID == nil {
-		return errors.New("insert failed")
-	}
+	upsert := true
+	u := bson.D{primitive.E{Key: "$set", Value: cs}}
+	res, err := csr.col.UpdateOne(ctx, bson.D{primitive.E{Key: "user_id", Value: eqFilter(cs.UserId)}}, u, &options.UpdateOptions{
+		Upsert: &upsert,
+	})
+	log.Debug().Interface("upsert result", res).Msg("Saved chat state")
 	return err
 }
 

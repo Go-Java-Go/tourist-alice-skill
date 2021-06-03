@@ -9,6 +9,8 @@ type config struct {
 
 	DbAddr          string `env:"DB_HOST" envDefault:"mongodb://localhost:27017/"`
 	DbName          string `env:"DB_NAME" envDefault:"tourist"`
+	DbUser          string `env:"DB_USER" envDefault:"admin"`
+	DbPassword      string `env:"DB_PASSWORD" envDefault:"password"`
 	Debug           bool   `env:"DEBUG" envDefault:"false"`
 	DefaultLanguage string `env:"DEFAULT_LANGUAGE" envDefault:"en"`
 

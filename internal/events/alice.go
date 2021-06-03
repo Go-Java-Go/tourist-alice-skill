@@ -4,8 +4,8 @@ import (
 	"context"
 	"github.com/azzzak/alice"
 	"github.com/pkg/errors"
-	"github.com/rs/zerolog/log"
 	"tourist-alice-skill/internal/api"
+	"tourist-alice-skill/internal/handler"
 	"tourist-alice-skill/internal/skill"
 )
 
@@ -21,6 +21,7 @@ type ChatStateService interface {
 type AliceListener struct {
 	AliceAPI         aliceAPI
 	Bots             skill.Interface
+	ErrorHandler     *handler.ErrorHandler
 	UserService      UserService
 	ChatStateService ChatStateService
 }
@@ -33,22 +34,24 @@ type aliceAPI interface {
 func (l *AliceListener) Do(ctx context.Context) (err error) {
 	updates := alice.ListenForWebhook("/hook", alice.Timeout(250000))
 
+	go l.ErrorHandler.Do(ctx)
+
 	updates.Loop(func(kit alice.Kit) *alice.Response {
 		upd := &api.Update{Request: kit.Req, Response: kit.Resp}
 		upd.User, err = l.UserService.UpsertUser(ctx, api.User{ID: kit.Req.Session.UserID})
 		if err != nil {
-			log.Error().Err(err).Stack().Msgf("failed to upsert user, %v", err)
+			l.ErrorHandler.HandleErrorWithMsg(err, "failed to upsert user")
 			return nil
 		}
 		if err := l.populateChatState(ctx, upd); err != nil {
-			log.Error().Err(err).Stack().Msgf("failed to populateChatState")
+			l.ErrorHandler.HandleErrorWithMsg(err, "failed to populateChatState")
 			return nil
 		}
 
 		res, err := l.Bots.OnMessage(ctx, *upd)
 		if err != nil {
 			//TODO: сделать канал, в который будем псиать ошибки, а в другом месте вычитывать из него и писать в логи
-			return nil
+			l.ErrorHandler.HandleError(err)
 		}
 		return res
 	})

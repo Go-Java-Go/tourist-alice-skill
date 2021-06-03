@@ -16,6 +16,7 @@ import (
 	"strings"
 	"time"
 	"tourist-alice-skill/internal/events"
+	"tourist-alice-skill/internal/handler"
 	bot "tourist-alice-skill/internal/skill"
 
 	"github.com/xlab/closer"
@@ -56,10 +57,11 @@ func main() {
 	closer.Bind(cl)
 }
 
-func initSkillConfig(bots []bot.Interface, us events.UserService, css events.ChatStateService) (*events.AliceListener, error) {
+func initSkillConfig(bots []bot.Interface, us events.UserService, css events.ChatStateService, eh *handler.ErrorHandler) (*events.AliceListener, error) {
 	multiSkill := bot.MultiSkill(bots)
 	tgListener := &events.AliceListener{
 		Bots:             multiSkill,
+		ErrorHandler:     eh,
 		UserService:      us,
 		ChatStateService: css,
 	}

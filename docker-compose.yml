@@ -6,6 +6,8 @@ services:
       context: .
     restart: always
     container_name: tourist-skill-sub
+    ports:
+      - 3000:3000
     environment:
       - LOG_LEVEL=debug
       - DB_USER=admin

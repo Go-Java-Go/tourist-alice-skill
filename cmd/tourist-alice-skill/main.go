@@ -3,7 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
-	it_client "github.com/Go-Java-Go/izi-travel-client"
+	itclient "github.com/Go-Java-Go/izi-travel-client"
+	"github.com/etherlabsio/healthcheck"
 	"github.com/gookit/i18n"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -23,7 +24,8 @@ import (
 
 func main() {
 	defer closer.Close()
-	ctx := context.Background()
+	ctx, ctxCl := context.WithCancel(context.Background())
+	closer.Bind(ctxCl)
 
 	cfg, err := initConfig()
 	if err != nil {
@@ -35,16 +37,17 @@ func main() {
 	}
 	initI18n(cfg)
 
-	go func() {
-		err := http.ListenAndServe(":3000", nil)
-		if err != nil {
-			log.Error().Err(err).Msg("")
-		}
-	}()
+	conn, cl, err := initMongoConnection(ctx, cfg)
+	if err != nil {
+		log.Fatal().Err(err).Msg("Can not init mongo connection")
+	}
+	closer.Bind(cl)
+
+	go initHealthCheck(conn)
 
 	rand.Seed(int64(time.Now().Nanosecond()))
 
-	app, cl, err := initApp(ctx, cfg)
+	app, err := initApp(ctx, conn, cfg)
 	if err != nil {
 		log.Error().Err(err).Msg("Can not init application")
 		return
@@ -53,7 +56,6 @@ func main() {
 		log.Error().Err(err).Msg("telegram listener failed")
 		return
 	}
-	closer.Bind(cl)
 }
 
 func initSkillConfig(bots []bot.Interface, us events.UserService, css events.ChatStateService) (*events.AliceListener, error) {
@@ -83,7 +85,11 @@ func initLogger(c *config) error {
 	return nil
 }
 
-func initMongoConnection(ctx context.Context, cfg *config) (*mongo.Database, func(), error) {
+func initMongoDatabase(cli *mongo.Client, cfg *config) *mongo.Database {
+	return cli.Database(cfg.DbName)
+}
+
+func initMongoConnection(ctx context.Context, cfg *config) (*mongo.Client, func(), error) {
 	client, err := mongo.NewClient(
 		options.Client().
 			ApplyURI(cfg.DbAddr).
@@ -106,15 +112,15 @@ func initMongoConnection(ctx context.Context, cfg *config) (*mongo.Database, fun
 	if err != nil {
 		return nil, nil, err
 	}
-	return client.Database(cfg.DbName), func() {
+	return client, func() {
 		if err := client.Disconnect(ctx); err != nil {
 			log.Fatal().Err(err).Msg("error while connect to mongo")
 		}
 	}, nil
 }
 
-func initIziTravelClient(c *config) (*it_client.Client, error) {
-	client, err := it_client.NewClient(it_client.Config{APIKey: "d", Host: c.IziTravelHost})
+func initIziTravelClient(c *config) (*itclient.Client, error) {
+	client, err := itclient.NewClient(itclient.Config{APIKey: "d", Host: c.IziTravelHost})
 	if err != nil {
 		return nil, err
 	}
@@ -127,4 +133,26 @@ func initI18n(c *config) {
 		language.Russian.String(): "Русский",
 	}
 	i18n.Init("conf/lang", c.DefaultLanguage, languages)
+}
+
+func initHealthCheck(cli *mongo.Client) {
+	http.HandleFunc("/health", healthcheck.HandlerFunc(
+
+		healthcheck.WithTimeout(5*time.Second),
+
+		healthcheck.WithChecker("mongo", healthcheck.CheckerFunc(
+			func(ctx context.Context) error {
+				return cli.Ping(ctx, nil)
+			})),
+
+		healthcheck.WithChecker("heartbeat", healthcheck.CheckerFunc(func(ctx context.Context) error {
+			log.Debug().Msg("health check called")
+			return nil
+		})),
+	))
+	log.Info().Str("startup port", "3000").Msg("Server started")
+	err := http.ListenAndServe(":3000", nil)
+	if err != nil {
+		log.Error().Err(err).Msg("Can not start server")
+	}
 }

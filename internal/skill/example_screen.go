@@ -26,19 +26,16 @@ func (s OperationScreen) HasReact(u api.Update) bool {
 	return u.ChatState != nil && u.ChatState.Action == wantSelectedCity
 }
 
-func (s *OperationScreen) OnMessage(ctx context.Context, u api.Update) (d *alice.Response, err error) {
+func (s *OperationScreen) OnMessage(ctx context.Context, u api.Update) (*alice.Response, error) {
 	defer func(css ChatStateService, ctx context.Context, id primitive.ObjectID) {
-		err := css.DeleteById(ctx, id)
-		if err != nil {
+		if err := css.DeleteById(ctx, id); err != nil {
 			log.Error().Err(err).Msg("")
 		}
 	}(s.css, ctx, u.ChatState.ID)
 
 	cs := &api.ChatState{UserId: u.User.ID, Action: selectedCity, CallbackData: &api.CallbackData{SelectedCity: u.Request.Command()}}
-	err = s.css.Save(ctx, cs)
-	if err != nil {
-		log.Error().Err(err).Msg("create chat state failed")
-		return
+	if err := s.css.Save(ctx, cs); err != nil {
+		return nil, err
 	}
 	text := "Выбранный город " + u.Request.Command() + "\n"
 	text += u.Request.Command()

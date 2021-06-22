@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/azzzak/alice"
 	"github.com/rs/zerolog/log"
-	"runtime/debug"
 	"sync"
 	"tourist-alice-skill/internal/api"
 )
@@ -27,7 +26,10 @@ type MultiSkill []Interface
 
 func (b MultiSkill) OnMessage(ctx context.Context, update api.Update) (ha *alice.Response, err error) {
 
+	childCtx, cancelFunc := context.WithCancel(ctx)
+
 	resps := make(chan *alice.Response)
+	errors := make(chan error)
 
 	var wg sync.WaitGroup
 	for _, bot := range b {
@@ -36,37 +38,50 @@ func (b MultiSkill) OnMessage(ctx context.Context, update api.Update) (ha *alice
 		bot := bot
 		go func(ctx context.Context, wg *sync.WaitGroup) {
 			defer wg.Done()
-			defer handlePanic(bot)
 			if bot.HasReact(update) {
-				resp, _ := bot.OnMessage(ctx, update)
-				resps <- resp
+				resp, er := bot.OnMessage(ctx, update)
+				if er != nil {
+					log.Error().Err(er).Msg("1")
+					errors <- er
+				} else {
+					resps <- resp
+				}
+
 			}
-		}(ctx, &wg)
+		}(childCtx, &wg)
 	}
 
 	go func() {
 		wg.Wait()
 		close(resps)
+		close(errors)
+		cancelFunc()
 	}()
 
 	var handler *alice.Response
-	//TODO: что то сделать с возаратом нескольких респонсов
-	for r := range resps {
-		log.Debug().Msgf("collect %v", r)
-		handler = r
-	}
+	var eror error
 
-	return handler, nil
-}
-func handlePanic(bot Interface) {
-	if err := recover(); err != nil {
-		switch e := err.(type) {
-		case error:
-			log.Error().Err(e).Stack().Msgf("panic! skill: %T, stack: %s", bot, string(debug.Stack()))
+tobreake:
+	for {
+		select {
+		case resp, ok := <-resps:
+			if !ok {
+				break tobreake
+			}
+			handler = resp
+
+		case err, ok := <-errors:
+			if !ok {
+				break tobreake
+			}
+			eror = err
+
 		default:
-			log.Error().Stack().Msgf("panic! skill: %t, err: %v, stack: %s", bot, err, string(debug.Stack()))
+
 		}
 	}
+
+	return handler, eror
 }
 
 func (b MultiSkill) HasReact(u api.Update) bool {

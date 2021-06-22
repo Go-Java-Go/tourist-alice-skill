@@ -9,6 +9,7 @@ import (
 	"context"
 	"github.com/google/wire"
 	"tourist-alice-skill/internal/events"
+	"tourist-alice-skill/internal/handler"
 	"tourist-alice-skill/internal/repository"
 	"tourist-alice-skill/internal/service"
 	"tourist-alice-skill/internal/skill"
@@ -33,7 +34,8 @@ func initApp(ctx context.Context, cfg *config) (*events.AliceListener, func(), e
 	v := ProvideBotList(startScreen, operationScreen)
 	mongoUserRepository := repository.NewUserRepository(database)
 	userService := service.NewUserService(mongoUserRepository)
-	aliceListener, err := initSkillConfig(v, userService, chatStateService)
+	errorHandler := handler.NewErrorHandler()
+	aliceListener, err := initSkillConfig(v, userService, chatStateService, errorHandler)
 	if err != nil {
 		cleanup()
 		return nil, nil, err

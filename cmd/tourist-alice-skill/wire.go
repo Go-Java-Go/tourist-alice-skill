@@ -6,6 +6,7 @@ import (
 	"context"
 	"github.com/google/wire"
 	"tourist-alice-skill/internal/events"
+	"tourist-alice-skill/internal/handler"
 	"tourist-alice-skill/internal/repository"
 	"tourist-alice-skill/internal/service"
 	"tourist-alice-skill/internal/skill"
@@ -13,7 +14,7 @@ import (
 
 func initApp(ctx context.Context, cfg *config) (tg *events.AliceListener, closer func(), err error) {
 	wire.Build(initMongoConnection, initSkillConfig, initIziTravelClient,
-		service.NewUserService, service.NewChatStateService,
+		service.NewUserService, service.NewChatStateService, handler.NewErrorHandler,
 		wire.Bind(new(events.ChatStateService), new(*service.ChatStateService)),
 		wire.Bind(new(skill.ChatStateService), new(*service.ChatStateService)),
 		wire.Bind(new(events.UserService), new(*service.UserService)),
